@@ -76,4 +76,7 @@ else
     #lan951x-led-ctl --fdx=0 --lnk=0 --spd=0
 fi
 
-# python3 -m http.server 8000
+#python3 -m pip list
+python3 /listdevs.py
+
+python3 -m http.server 8000
