@@ -1,0 +1,36 @@
+# (c) Dale Phurrough. All rights reserved.
+
+name: "Raspberry Pi LED control"
+description: >-
+  Control the power, activity, and ethernet LEDs on Raspberry Pi
+version: "0.1.13"
+stage: experimental
+advanced: true
+slug: "dp_rpi_led_ctrl"
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+
+# TODO create services that can be called
+startup: services
+init: false
+
+#ports:
+#  8000/tcp: 8000
+
+# permissions
+hassio_api: true
+devicetree: true
+
+schema:
+  power_led: bool
+  activity_led: bool
+  ethernet_leds: bool
+
+options:
+  power_led: true
+  activity_led: true
+  ethernet_leds: true
