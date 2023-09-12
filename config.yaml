@@ -2,10 +2,9 @@
 
 name: "Raspberry Pi LED control"
 description: >-
-  Control the power, activity, and ethernet LEDs on Raspberry Pi
-version: "0.1.19"
+  Control LEDs (power, activity, ethernet, etc.) on Raspberry Pi
+version: "0.1.30"
 stage: experimental
-advanced: true
 slug: "dp_rpi_led_ctrl"
 arch:
   - aarch64
@@ -19,23 +18,24 @@ machine:
   - raspberrypi4
   - raspberrypi4-64
 
-# TODO create services that can be called
+# permissions
+hassio_api: true
+usb: true
+
+# Claiming rating buff due to https://github.com/home-assistant/supervisor/blob/main/supervisor/addons/utils.py
+# even though this addon has no incoming network access
+auth_api: true
+
+# TODO create services that can be called to adjust LEDs
 startup: services
 init: false
 
-ports:
-  8000/tcp: 8000
-
-# permissions
-hassio_api: true
-devicetree: true
-
 schema:
-  power_led: bool
-  activity_led: bool
-  ethernet_leds: bool
+  "Power LED": bool
+  "Activity LED trigger": list(none|mmc0)
+  "Ethernet LEDs": bool
 
 options:
-  power_led: true
-  activity_led: true
-  ethernet_leds: true
+  "Power LED": true
+  "Activity LED trigger": 'mmc0'
+  "Ethernet LEDs": true
