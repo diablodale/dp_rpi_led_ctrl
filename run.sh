@@ -1,75 +1,29 @@
 #!/usr/bin/with-contenv bashio
-# (c) Dale Phurrough. All rights reserved.
 
-#bashio::cache.flush_all
+# Copyright (C) 2023 Dale Phurrough <dale@hidale.com>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 echo "Running on os board=$(bashio::os.board)"
 echo "Running on ha machine=$(bashio::info.machine)"
-PROC_MODEL=$(cat /proc/cpuinfo | grep -E 'Model\s+:' | cut -f 2 -d ':' | cut -c 2-)
-if [[ -z "$PROC_MODEL" ]]; then
-    echo "Aborting! The kernel is not exporting Raspberry Pi model to /proc/cpuinfo"
-    exit 1
-fi
 
-# https://github.com/raspberrypi/documentation/blob/develop/documentation/asciidoc/computers/raspberry-pi/revision-codes.adoc
-#PROC_REVISION_HEX=$(cat /proc/cpuinfo | grep -E 'Revision\s+:' | cut -f 2 -d ':' | cut -c 2-)
-#PROC_REVISION=$(( 16#$PROC_REVISION_HEX ))
-#REVISION_NEWCODE=$(( ($PROC_REVISION >> 23) & 1 ))
-#REVISION_TYPE=$(( ($PROC_REVISION >> 4) & 16#ff ))
-#echo "RPi proc model is: ${PROC_MODEL}"
-#echo "RPi proc revision is: 0x${PROC_REVISION_HEX}"
-#echo "RPi revision newcode is: ${REVISION_NEWCODE}"
-#echo "RPi revision type is: ${REVISION_TYPE}"
-
-# Determine LED files
-if [[ -f "/sys/class/leds/ACT/trigger" ]]; then
-    ACT_LED_FILE="ACT"
-elif [[ -f "/sys/class/leds/led0/trigger" ]]; then
-    ACT_LED_FILE="led0"
-else
-    echo "Unable to control activity LED. No known /sys/class/leds/xxx directory."
-fi
-if [[ -f "/sys/class/leds/PWR/trigger" ]]; then
-    PWR_LED_FILE="PWR"
-elif [[ -f "/sys/class/leds/led1/trigger" ]]; then
-    PWR_LED_FILE="led1"
-else
-    echo "Unable to control power LED. No known /sys/class/leds/xxx directory."
-fi
-
-# Activity LED
-if [[ -n "$ACT_LED_FILE" ]]; then
-    CURRENT_ACTIVITY=$(grep -Eo '\[\w+' "/sys/class/leds/${ACT_LED_FILE}/trigger" | cut -c 2-)
-    echo "Current hardware activity LED trigger is ${CURRENT_ACTIVITY}"
-    NEXT_ACTIVITY=$(bashio::config '"Activity LED trigger"')
-    echo "HA configuration activity LED trigger is ${NEXT_ACTIVITY}"
-    if [[ "$NEXT_ACTIVITY" != "$CURRENT_ACTIVITY" ]]; then
-        #echo $NEXT_ACTIVITY > /sys/class/leds/${ACT_LED_FILE}/trigger
-        if [[ "$NEXT_ACTIVITY" != "none" ]]; then
-            echo "Enabling activity LED with trigger=${NEXT_ACTIVITY}"
-        else
-            echo "Disabling activity LED"
-            #echo "0" > /sys/class/leds/${ACT_LED_FILE}/brightness
-        fi
-    fi
-fi
-
-# Power LED
-if [[ -n "$PWR_LED_FILE" ]]; then
-    CURRENT_POWER=$(grep -Eo '\[\w+' "/sys/class/leds/${PWR_LED_FILE}/trigger" | cut -c 2-)
-    echo "Current hardware power LED trigger is ${CURRENT_POWER}"
-    [[ "$(bashio::config '"Power LED"')" == "true" ]] && NEXT_POWER="input" || NEXT_POWER="none"
-    echo "HA configuration power LED trigger is ${NEXT_POWER}"
-    if [[ "$NEXT_POWER" != "$CURRENT_POWER" ]]; then
-        #echo $NEXT_POWER > /sys/class/leds/${PWR_LED_FILE}/trigger
-        if [[ "$NEXT_POWER" != "none" ]]; then
-            echo "Enabling power LED with trigger=${NEXT_POWER}"
-        else
-            echo "Disabling power LED"
-            #echo "0" > /sys/class/leds/${PWR_LED_FILE}/brightness
-        fi
-    fi
-fi
+# Enable/disable activity and power LEDs
+NEXT_ACTIVITY=$(bashio::config '"Activity LED trigger"')
+[[ "$(bashio::config '"Power LED"')" == "true" ]] && NEXT_POWER="on" || NEXT_POWER="off"
+echo "HA configuration activity LED trigger: ${NEXT_ACTIVITY}"
+echo "HA configuration power LED trigger: ${NEXT_POWER}"
+./led-rpi.sh -v -a "${NEXT_ACTIVITY}" -p "${NEXT_POWER}"
 
 # Determine ethernet hardware
 if lsusb | grep -q '0424:ec00'; then
@@ -79,7 +33,7 @@ elif lsusb | grep -q '0424:7800'; then
     echo "Found LAN7800 ethernet"
     #ETHER_APP="/led-lan7800.py"
 else
-    echo "No known ethernet found"
+    echo "No known ethernet"
     exit 0
 fi
 
@@ -91,14 +45,15 @@ if [[ -n "$ETHER_APP" ]]; then
     NEXT_ETHERNET=$(bashio::config '"Ethernet LEDs"')
     if [[ "$NEXT_ETHERNET" == "true" ]]; then
         echo "Enabling ethernet LEDs"
-        # $ETHER_APP --fdx=1 --lnk=1 --spd=1
+        $ETHER_APP -d 1 -l 1 -s 1
     else
         echo "Disabling ethernet LEDs"
-        # $ETHER_APP --fdx=0 --lnk=0 --spd=0
+        $ETHER_APP -d 0 -l 0 -s 0
     fi
 else
     echo "No app available to control ethernet LEDs"
 fi
 
+#echo "whoami: $(whoami)"
 #echo "My IP address is $(hostname -i)"
 #python3 -m http.server 8099 --bind 172.30.33.3

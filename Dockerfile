@@ -1,21 +1,29 @@
-# (c) Dale Phurrough. All rights reserved.
+# Copyright (C) 2023 Dale Phurrough <dale@hidale.com>
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ARG BUILD_FROM
 FROM $BUILD_FROM
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Install python for dev-only: py3-pip, py3-usb, py3-libusb1
 RUN apk add --no-cache python3 py3-usb
-#RUN apk add --no-cache py3-pip
-# build libusb1 since no alpine package available for release branch
-#RUN pip3 install --upgrade libusb1
-#RUN apk add --no-cache libusb
 
 WORKDIR /
 
 # Copy data for add-on
-COPY run.sh led-lan951x.py /
-RUN chmod a+x /run.sh /led-lan951x.py
+COPY run.sh led-lan951x.py led-rpi.sh /
+RUN chmod a+x /run.sh /led-lan951x.py /led-rpi.sh
 
 CMD [ "/run.sh" ]
