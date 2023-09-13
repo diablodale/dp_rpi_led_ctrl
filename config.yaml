@@ -3,7 +3,7 @@
 name: "Raspberry Pi LED control"
 description: >-
   Control LEDs (power, activity, ethernet, etc.) on Raspberry Pi
-version: "0.1.30"
+version: "0.1.31"
 stage: experimental
 slug: "dp_rpi_led_ctrl"
 arch:

@@ -45,7 +45,7 @@ if [[ -n "$ETHER_APP" ]]; then
     NEXT_ETHERNET=$(bashio::config '"Ethernet LEDs"')
     if [[ "$NEXT_ETHERNET" == "true" ]]; then
         echo "Enabling ethernet LEDs"
-        $ETHER_APP -d 1 -l 1 -s 1
+        $ETHER_APP -d s -l s -s s
     else
         echo "Disabling ethernet LEDs"
         $ETHER_APP -d 0 -l 0 -s 0
