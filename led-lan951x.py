@@ -61,15 +61,14 @@ GPIO_SPEED_MASK = GPIO_CTL_2 | GPIO_DIR_2 | GPIO_DATA_2
 GPIO_MASKS = [GPIO_DUPLEX_MASK, GPIO_LINK_MASK, GPIO_SPEED_MASK]
 
 def str_to_led_mode(str):
-    match str:
-        case '0' | 'off':
-            return LedMode.OFF
-        case '1' | 'on':
-            return LedMode.ON
-        case 's' | 'status':
-            return LedMode.STATUS
-        case None:
-            return LedMode.KEEP
+    if str in {'0', 'off'}:
+        return LedMode.OFF
+    elif str in {'1', 'on'}:
+        return LedMode.ON
+    elif str in {'s', 'status'}:
+        return LedMode.STATUS
+    elif str is None:
+        return LedMode.KEEP
     raise ValueError('invalid led mode')
 
 def read_config(usb_device):
