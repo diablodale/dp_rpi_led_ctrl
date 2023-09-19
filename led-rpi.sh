@@ -139,7 +139,7 @@ case "${NEXT_POWER}" in
         ;;
 esac
 
-# Determine LED files; kernels have used different names
+# Determine LED files; kernel 6.1 changed from led0 -> ACT, led1 -> PWR
 if [[ -f "/sys/class/leds/ACT/trigger" ]]; then
     ACTIVITY_LED_FILE="ACT"
 elif [[ -f "/sys/class/leds/led0/trigger" ]]; then

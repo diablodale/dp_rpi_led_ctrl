@@ -32,13 +32,10 @@ if lsusb | grep -q '0424:ec00'; then
 elif lsusb | grep -q '0424:7800'; then
     echo "Found LAN7800 ethernet"
     #ETHER_APP="/led-lan7800.py"
-else
-    echo "No known ethernet"
-    exit 0
 fi
 
 # Enable/disable ethernet LEDs
-if [[ -n "$ETHER_APP" ]]; then
+if [[ -n "${ETHER_APP:-}" ]]; then
     echo "Using ${ETHER_APP} to control ethernet LEDs"
     CURRENT_ETHER=$($ETHER_APP --read 16)
     echo "Current ethernet LED state is ${CURRENT_ETHER}"
